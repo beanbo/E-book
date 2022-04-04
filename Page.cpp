@@ -1,9 +1,11 @@
 #include "Page.h"
 #include "DrawHelper.h"
+#include "firasans.h"
+#include "FileHelper.h"
 
-void PageManager::SetBookText(const String& sBookText)
+void PageManager::LoadBook(const String& sFileName)
 {
-    m_sBookText = sBookText;
+    readFile(sFileName.c_str(), m_sBookText);
     m_nCurrentPage = 1;
 
     CalculateAllPositions();
@@ -12,10 +14,11 @@ void PageManager::SetBookText(const String& sBookText)
 
 void PageManager::CalculateAllPositions()
 {
-    int xOffSet = 5;
+    setFont(FiraSans);
+	
     int yOffset = 0;
     String CurrStr;
-    const int SymbolsInRow = EPD_WIDTH / 12;
+    constexpr int SymbolsInRow = EPD_WIDTH / 16;
     int StartPosition = 0;
 
     char* data;
@@ -25,6 +28,7 @@ void PageManager::CalculateAllPositions()
     bool NeedEndCycle = false;
     int CurrentRow = 1;
     int CurrentReadingPage = 0;
+    int nMaxWidth = EPD_WIDTH - m_nXOffset * 2;
 
     while (true)
     {
@@ -46,24 +50,38 @@ void PageManager::CalculateAllPositions()
 
         do
         {
-            if (!NeedEndCycle)
+            if (CurrStr[0] == '\n')
             {
-                do
-                {
-                    CurrStr.remove(CurrStr.length() - 1);
-                } while (CurrStr[CurrStr.length() - 1] != ' ');
+                CurrStr = " ";
+                xx = 0;
             }
+            else
+            {
+                if (!NeedEndCycle)
+                {
+                    int nIndex = CurrStr.indexOf('\n');
 
-            data = const_cast<char*>(CurrStr.c_str());
-            xx = xOffSet;
-            yy = yOffset;
-            get_text_bounds(&currentFont, data, &xx, &yy, &x1, &y1, &w, &h, NULL);
+                    if (nIndex == -1)
+                        nIndex = CurrStr.lastIndexOf(' ');
 
-            if (xx > EPD_WIDTH && NeedEndCycle)
-                NeedEndCycle = false;
-        } while (xx > EPD_WIDTH);
+                    CurrStr.remove(nIndex, CurrStr.length() - nIndex);
+                }
 
-        StartPosition += CurrStr.length();
+                Serial.println("PageManager::CalculateAllPositions(): CurrStr = " + CurrStr);
+
+                data = const_cast<char*>(CurrStr.c_str());
+                xx = m_nXOffset;
+                yy = yOffset;
+                get_text_bounds(&currentFont, data, &xx, &yy, &x1, &y1, &w, &h, NULL);
+
+                if (xx > nMaxWidth && NeedEndCycle)
+                    NeedEndCycle = false;
+            }
+            
+			
+        } while (xx > nMaxWidth);
+		
+        StartPosition += CurrStr.length() + 1;
 
         if (NeedEndCycle)
         {
@@ -86,14 +104,20 @@ void PageManager::AddPage()
 {
     m_nNumberOfPages++;
 
-    if (m_nNumberOfPages % 5 == 1)
+    constexpr int nBlocksize = 15;
+	
+    if (m_nNumberOfPages % nBlocksize == 1)
     {
-        m_Pages = (PageData*)realloc(m_Pages, 5 * ((m_nNumberOfPages / 5) + 1) * sizeof(PageData));
+        m_Pages = (PageData*)realloc(m_Pages, nBlocksize * ((m_nNumberOfPages / nBlocksize) + 1) * sizeof(PageData));
     }
 }
 
 void PageManager::DrawCurrentPage()
 {
+    Serial.println("PageManager::DrawCurrentPage()");
+	
+    setFont(FiraSans);
+	
     epd_poweron();
     ClearFrameBuffer();
 
