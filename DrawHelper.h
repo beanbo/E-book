@@ -16,6 +16,8 @@ extern uint8_t* framebuffer;
 
 void InitializeScreen();
 
+void drawStartImage();
+void drawSleepImage();
 void drawString(int x, int y, const String& text, alignment align = LEFT);
 void drawFastHLine(int16_t x0, int16_t y0, int length, uint16_t color);
 void drawFastVLine(int16_t x0, int16_t y0, int length, uint16_t color);

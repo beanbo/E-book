@@ -1,4 +1,6 @@
 #include "DrawHelper.h"
+#include "logo.h"
+#include "lilygo.h"
 
 GFXfont  currentFont;
 uint8_t* framebuffer = nullptr;
@@ -15,6 +17,36 @@ void InitializeScreen()
     }
 
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
+}
+
+void drawStartImage()
+{
+    Rect_t area = {
+        .x = (EPD_WIDTH - lilygo_width) / 2,
+        .y = (EPD_HEIGHT - lilygo_height) / 2,
+        .width = lilygo_width,
+        .height = lilygo_height
+    };
+
+    epd_poweron();
+    epd_clear();
+    epd_draw_grayscale_image(area, (uint8_t*)lilygo_data);
+    epd_poweroff();
+}
+
+void drawSleepImage()
+{	
+    Rect_t area = {
+        .x = (EPD_WIDTH - logo_width) / 2,
+        .y = (EPD_HEIGHT - logo_height) / 2,
+        .width = logo_width,
+        .height = logo_height,
+    };
+
+    epd_poweron();
+    epd_clear();
+    epd_draw_grayscale_image(area, (uint8_t*)logo_data);
+    epd_poweroff();
 }
 
 void drawString(int x, int y, const String& text, alignment align)

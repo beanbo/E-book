@@ -7,13 +7,8 @@
 #include "Button2.h"
 #include "FileHelper.h"
 #include "Defines.h"
-#include <esp_task_wdt.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "logo.h"
 #include "firasans.h"
 #include <Wire.h>
-#include "lilygo.h"
 
 Button2 btnPower(BUTTON_POWER);
 TouchClass touch;
@@ -26,12 +21,18 @@ void setup()
     InitializeTouch();
     InitializeScreen();
     InitializeFileSystem();
+	
+    btnPower.setPressedHandler(buttonPressed);
 
+    drawStartImage();
+	
     pageManager.LoadBook("/testBook.txt");
 }
 
 void loop()
 {
+    btnPower.loop();
+	
     if (digitalRead(TOUCH_INT) && touch.scanPoint())
     {
         uint16_t x, y;
@@ -41,6 +42,17 @@ void loop()
             pageManager.GoToPreviousPage();
         else
             pageManager.GoToNextPage();
+    }
+}
+
+void buttonPressed(Button2& button)
+{
+    Serial.println("Button attached to pin " + String(button.getAttachPin()));
+
+    if (button.getAttachPin() == BUTTON_POWER)
+    {
+        drawSleepImage();
+        BookSleep();
     }
 }
 
