@@ -3,8 +3,16 @@
 #include "firasans.h"
 #include "FileHelper.h"
 
-void PageManager::LoadBook(const String& sFileName)
+
+void PageManager::OpenBook(const String& sFileName)
 {
+    if (m_Pages != nullptr)
+    {
+		delete m_Pages;
+        m_Pages = nullptr;
+        m_nNumberOfPages = 0;
+    }
+
     readFile(sFileName.c_str(), m_sBookText);
     m_nCurrentPage = 1;
 
@@ -66,8 +74,6 @@ void PageManager::CalculateAllPositions()
 
                     CurrStr.remove(nIndex, CurrStr.length() - nIndex);
                 }
-
-                Serial.println("PageManager::CalculateAllPositions(): CurrStr = " + CurrStr);
 
                 data = const_cast<char*>(CurrStr.c_str());
                 xx = m_nXOffset;

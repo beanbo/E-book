@@ -14,7 +14,7 @@ public:
         int rows;
     };
 	
-    void LoadBook(const String& sFileName);
+    void OpenBook(const String& sFileName);
 
     void DrawCurrentPage();
 
@@ -26,7 +26,7 @@ protected:
     void AddPage();
 
 protected:
-    PageData* m_Pages = NULL;
+    PageData* m_Pages = nullptr;
     int m_nNumberOfPages = 0;
     int m_nXOffset = 10;
     int m_nYOffset = 95;

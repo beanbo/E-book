@@ -1,18 +1,16 @@
 #pragma once
+#include "Menu.h"
 #include "FileHelper.h"
-#include "Page.h"
 #include <Arduino.h>
 #include <touch.h>
 #include "DrawHelper.h"
 #include "Button2.h"
-#include "FileHelper.h"
 #include "Defines.h"
-#include "firasans.h"
 #include <Wire.h>
 
 Button2 btnPower(BUTTON_POWER);
 TouchClass touch;
-PageManager pageManager;
+Menu menu;
 
 void setup()
 {
@@ -26,7 +24,7 @@ void setup()
 
     drawStartImage();
 	
-    pageManager.LoadBook("/testBook.txt");
+    menu.Show();
 }
 
 void loop()
@@ -38,10 +36,7 @@ void loop()
         uint16_t x, y;
         touch.getPoint(x, y, 0);
 
-        if (x < EPD_WIDTH / 2) 
-            pageManager.GoToPreviousPage();
-        else
-            pageManager.GoToNextPage();
+        menu.HitTest(x, y);
     }
 }
 

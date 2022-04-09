@@ -117,12 +117,14 @@
     <ClInclude Include="logo.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Page.h" />
     <ClInclude Include="__vm\.E-book.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DrawHelper.cpp" />
     <ClCompile Include="FileHelper.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Page.cpp" />
   </ItemGroup>
   <PropertyGroup>
