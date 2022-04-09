@@ -15,6 +15,7 @@ void Menu::Show()
 void Menu::FindBooks()
 {
     m_nBooksCount = 0;
+    m_nSelected = 1;
 	
 	if (m_pBookNames != nullptr)
 	{
@@ -69,31 +70,43 @@ void Menu::FindBooks()
 
 void Menu::DrawBooks()
 {
-	setFont(FiraSans);
-	
+    setFont(FiraSans);
+
     constexpr int nVisibleBooks = 3;
     constexpr int nBooksMargin = 30;
+    constexpr int nFrameXMargin = 30;
     constexpr int nBookHeight = EPD_HEIGHT - 2 * nBooksMargin;
-    constexpr int nBookWidth = ((EPD_WIDTH - nBooksMargin) / 3) - nBooksMargin;
+    constexpr int nBookWidth = ((EPD_WIDTH - (nBooksMargin + nFrameXMargin * 2)) / 3) - nBooksMargin;
+    constexpr int nMiddle = EPD_HEIGHT / 2;
+    constexpr int nGlyphSize = 20;
+    constexpr int nRight = EPD_WIDTH - nFrameXMargin;
 
     epd_poweron();
     ClearFrameBuffer();
-	
-	for (int nBook = 0; nBook < nVisibleBooks; nBook++)
-	{
-        Serial.println("m_pBookNames[" + String(nBook) + "] = " + *m_pBookNames[nBook]);
-		if (nBook >= m_nBooksCount || m_pBookNames[nBook]->isEmpty())
-			break;
 
-		int nXOffset = nBooksMargin + nBook * (nBookWidth + nBooksMargin);
-		drawRect(nXOffset, nBooksMargin, nBookWidth, nBookHeight);
+	// Draw triangle glyphs
+    fillTriangle(nFrameXMargin, nMiddle - nGlyphSize, nFrameXMargin, nMiddle + nGlyphSize, nFrameXMargin - nGlyphSize, nMiddle);
+    fillTriangle(nRight, nMiddle - nGlyphSize, nRight, nMiddle + nGlyphSize, nRight + nGlyphSize, nMiddle);
 
-		String strBookName = m_pBookNames[nBook]->c_str();
+	// Draw Books
+    for (int nBook = 0; nBook < nVisibleBooks; nBook++)
+    {
+        const int nBookIndex = (m_nSelected - 1) * nVisibleBooks + nBook;
+		
+        if (nBookIndex >= m_nBooksCount || m_pBookNames[nBookIndex]->isEmpty())
+            break;
+
+        Serial.println("m_pBookNames[" + String(nBookIndex) + "] = " + *m_pBookNames[nBookIndex]);
+
+        int nXOffset = nFrameXMargin + nBooksMargin + nBook * (nBookWidth + nBooksMargin);
+        drawRect(nXOffset, nBooksMargin, nBookWidth, nBookHeight);
+
+        String strBookName = m_pBookNames[nBookIndex]->c_str();
         strBookName.replace("/", "");
         strBookName.replace(".txt", "");
-		drawString(nXOffset + nBookWidth / 2, nBooksMargin + nBookHeight / 2, strBookName, CENTER);
-	}
-	
+        drawString(nXOffset + nBookWidth / 2, nBooksMargin + nBookHeight / 2 + 15, strBookName, CENTER);
+    }
+
     epd_clear();
     UpdateScreen();
     epd_poweroff();
@@ -119,23 +132,51 @@ void Menu::HitTest(uint16_t x, uint16_t y)
     }
     else if (m_state == MENU)
     {
+        constexpr int nFrameXMargin = 30;
+        constexpr int nMiddle = EPD_HEIGHT / 2;
+        constexpr int nRight = EPD_WIDTH - nFrameXMargin;
         constexpr int nVisibleBooks = 3;
-        constexpr int nBooksMargin = 30;
-        constexpr int nBookHeight = EPD_HEIGHT - 2 * nBooksMargin;
-        constexpr int nBookWidth = ((EPD_WIDTH - nBooksMargin) / 3) - nBooksMargin;
+        constexpr int nCorrection = 15;
+        constexpr int nGlyphSize = 20 + nCorrection;
 
-        for (int nBook = 0; nBook < nVisibleBooks; nBook++)
-        {
-            if (x >= nBooksMargin + nBook * (nBookWidth + nBooksMargin) && x <= nBooksMargin + nBook * (nBookWidth + nBooksMargin) + nBookWidth &&
-                y >= nBooksMargin && y <= nBooksMargin + nBookHeight)
+        // check click on triangle glyphs
+		if (x < nFrameXMargin + nCorrection && x > 0 && y > nMiddle - nGlyphSize && y < nMiddle + nGlyphSize) // left
+		{
+            if (m_nSelected > 1)
             {
-                if (nBook >= m_nBooksCount || m_pBookNames[nBook]->isEmpty())
-                    break;
+                m_nSelected--;
+                DrawBooks();
+            }
+		}
+		else if (x < EPD_WIDTH && x > nRight - nCorrection && y > nMiddle - nGlyphSize && y < nMiddle + nGlyphSize) // right
+		{
+            if (m_nSelected * nVisibleBooks < m_nBooksCount)
+            {
+                m_nSelected++;
+                DrawBooks();
+            }
+		}
+        else // books
+        {
+            constexpr int nBooksMargin = 30;
+            constexpr int nBookHeight = EPD_HEIGHT - 2 * nBooksMargin;
+            constexpr int nBookWidth = ((EPD_WIDTH - (nBooksMargin + nFrameXMargin * 2)) / 3) - nBooksMargin;
 
-                Serial.println("m_pBookNames[" + String(nBook) + "] = " + *m_pBookNames[nBook]);
-                pageManager.OpenBook(*m_pBookNames[nBook]);
-                m_state = BOOK;
-                break;
+            for (int nBook = 0; nBook < nVisibleBooks; nBook++)
+            {
+                if (x >= nFrameXMargin + nBooksMargin + nBook * (nBookWidth + nBooksMargin) && x <= nFrameXMargin + nBooksMargin + nBook * (nBookWidth + nBooksMargin) + nBookWidth &&
+                    y >= nBooksMargin && y <= nBooksMargin + nBookHeight)
+                {
+                    const int nBookIndex = (m_nSelected - 1) * nVisibleBooks + nBook;
+
+                    if (nBookIndex >= m_nBooksCount || m_pBookNames[nBookIndex]->isEmpty())
+                        break;
+
+                    Serial.println("m_pBookNames[" + String(nBookIndex) + "] = " + *m_pBookNames[nBookIndex]);
+                    pageManager.OpenBook(*m_pBookNames[nBookIndex]);
+                    m_state = BOOK;
+                    break;
+                }
             }
         }
     }

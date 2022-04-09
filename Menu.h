@@ -15,5 +15,6 @@ public:
 protected:
 	String** m_pBookNames = nullptr;
 	int m_nBooksCount = 0;
+	int m_nSelected = 1;
 	BookState m_state = MENU;
 };
