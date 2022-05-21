@@ -62,7 +62,8 @@ void Menu::FindBooks()
                 m_pBookNames = (String**)realloc(m_pBookNames, nBlocksize * ((m_nBooksCount / nBlocksize) + 1) * sizeof(String*));
             }
 
-            m_pBookNames[m_nBooksCount - 1] = new String(file.name());
+            m_pBookNames[m_nBooksCount - 1] = new String(dirname);
+            *m_pBookNames[m_nBooksCount - 1] += file.name();
         }
 
         file = root.openNextFile();
