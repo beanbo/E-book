@@ -23,7 +23,7 @@ void drawFastHLine(int16_t x0, int16_t y0, int length, uint16_t color = Black);
 void drawFastVLine(int16_t x0, int16_t y0, int length, uint16_t color = Black);
 void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color = Black);
 void drawCircle(int x0, int y0, int r, uint8_t color = Black);
-void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color = Black);
+void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t width = 1, uint16_t color = Black);
 void drawPixel(int x, int y, uint8_t color);
 
 void fillCircle(int x, int y, int r, uint8_t color = Black);

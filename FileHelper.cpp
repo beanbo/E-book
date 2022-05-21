@@ -1,19 +1,56 @@
 #include "FileHelper.h"
+#include <SD.h>
+#include <SPI.h>
 
-void InitializeFileSystem()
+#define SD_MISO             12
+#define SD_MOSI             13
+#define SD_SCLK             21
+#define SD_CS               22
+
+FileHelper fileHelper;
+
+FileHelper::FileHelper()
+{
+    m_pCurrentFS = &SPIFFS;
+}
+
+void FileHelper::SetCurrentFileSystem(int fs)
+{
+    if (fs == PSRAM && m_pCurrentFS != &SPIFFS)
+    {
+        Serial.println("File system changed to PSRAM");
+		m_pCurrentFS = &SPIFFS;
+    }
+    else if (fs == SD_CARD && m_pCurrentFS != &SD)
+    {
+        Serial.println("File system changed to SD card");
+		m_pCurrentFS = &SD;
+    }
+}
+
+fs::FS* FileHelper::GetCurrentFileSystem()
+{
+    return m_pCurrentFS;
+}
+
+void FileHelper::InitializeFileSystem()
 {
     if (!SPIFFS.begin(true))
     {
         Serial.println("SPIFFS Mount Failed");
         while (1);
     }
+	else
+	{
+		Serial.println("SPIFFS Mount Success");
+	}
 }
 
-void listDir(const char* dirname, uint8_t levels)
+void FileHelper::ListDir(const char* dirname, uint8_t levels)
 {
     Serial.printf("Listing directory: %s\r\n", dirname);
 
-    File root = SPIFFS.open(dirname);
+    File root = m_pCurrentFS->open(dirname);
     if (!root)
     {
         Serial.println("- failed to open directory");
@@ -34,7 +71,7 @@ void listDir(const char* dirname, uint8_t levels)
             Serial.print("  DIR : ");
             Serial.println(file.name());
             if (levels)
-                listDir(file.name(), levels - 1);
+                ListDir(file.name(), levels - 1);
         }
         else
         {
@@ -48,11 +85,11 @@ void listDir(const char* dirname, uint8_t levels)
     }
 }
 
-void readFile(const char* path, String& fileText)
+void FileHelper::ReadFile(const char* path, String& fileText)
 {
     Serial.printf("Reading file: %s\r\n", path);
 
-    File file = SPIFFS.open(path);
+    File file = m_pCurrentFS->open(path);
     if (!file || file.isDirectory())
     {
         Serial.println("- failed to open file for reading");
@@ -71,11 +108,11 @@ void readFile(const char* path, String& fileText)
     Serial.println("- file closed");
 }
 
-void writeFile(const char* path, const char* message)
+void FileHelper::WriteFile(const char* path, const char* message)
 {
     Serial.printf("Writing file: %s\r\n", path);
 
-    File file = SPIFFS.open(path, FILE_WRITE);
+    File file = m_pCurrentFS->open(path, FILE_WRITE);
     if (!file)
     {
         Serial.println("- failed to open file for writing");
@@ -90,11 +127,11 @@ void writeFile(const char* path, const char* message)
     file.close();
 }
 
-void appendFile(const char* path, const char* message)
+void FileHelper::AppendFile(const char* path, const char* message)
 {
     Serial.printf("Appending to file: %s\r\n", path);
 
-    File file = SPIFFS.open(path, FILE_APPEND);
+    File file = m_pCurrentFS->open(path, FILE_APPEND);
     if (!file)
     {
         Serial.println("- failed to open file for appending");
@@ -109,34 +146,34 @@ void appendFile(const char* path, const char* message)
     file.close();
 }
 
-void renameFile(const char* path1, const char* path2)
+void FileHelper::RenameFile(const char* path1, const char* path2)
 {
     Serial.printf("Renaming file %s to %s\r\n", path1, path2);
 
-    if (SPIFFS.rename(path1, path2))
+    if (m_pCurrentFS->rename(path1, path2))
         Serial.println("- file renamed");
     else
         Serial.println("- rename failed");
 }
 
-void deleteFile(const char* path)
+void FileHelper::DeleteFile(const char* path)
 {
     Serial.printf("Deleting file: %s\r\n", path);
 
-    if (SPIFFS.remove(path))
+    if (m_pCurrentFS->remove(path))
         Serial.println("- file deleted");
     else
         Serial.println("- delete failed");
 }
 
-void testFileIO(const char* path)
+void FileHelper::TestFileIO(const char* path)
 {
     Serial.printf("Testing file I/O with %s\r\n", path);
 
     static uint8_t buf[512];
     size_t len = 0;
 
-    File file = SPIFFS.open(path, FILE_WRITE);
+    File file = m_pCurrentFS->open(path, FILE_WRITE);
     if (!file)
     {
         Serial.println("- failed to open file for writing");
@@ -162,7 +199,7 @@ void testFileIO(const char* path)
 
     file.close();
 
-    file = SPIFFS.open(path);
+    file = m_pCurrentFS->open(path);
     start = millis();
     end = start;
     i = 0;
@@ -196,4 +233,56 @@ void testFileIO(const char* path)
     }
     else
         Serial.println("- failed to open file for reading");
+}
+
+bool FileHelper::IsSDCardConnected()
+{
+    SPI.begin(SD_SCLK, SD_MISO, SD_MOSI);
+    if (!SD.begin(SD_CS))
+    {
+        Serial.println("SD card reader module not found");
+        return false;
+    }
+	
+    uint8_t cardType = SD.cardType();
+	
+    if (cardType == CARD_NONE) {
+        Serial.println("No SD card attached");
+    }
+    else
+    {
+        Serial.print("SD Card Type: ");
+        if (cardType == CARD_MMC) {
+            Serial.println("MMC");
+        }
+        else if (cardType == CARD_SD) {
+            Serial.println("SDSC");
+        }
+        else if (cardType == CARD_SDHC) {
+            Serial.println("SDHC");
+        }
+        else 
+        {
+            Serial.println("UNKNOWN");
+        }
+    }		
+	
+    if (cardType == CARD_NONE || cardType >= CARD_UNKNOWN)
+        return false;
+	
+    return true;
+}
+
+void FileHelper::TryChangeFileSystem()
+{
+    SetCurrentFileSystem(IsSDCardConnected() ? SD_CARD : PSRAM);
+   /* SPI.begin(SD_SCLK, SD_MISO, SD_MOSI);
+    bool rlst = SD.begin(SD_CS);
+    if (!rlst) {
+        Serial.println("SD init failed");
+    }
+    else {
+        Serial.println("SD init Suc");
+    }*/
+    //InitializeTouch();
 }

@@ -15,20 +15,20 @@ Menu menu;
 void setup()
 {
     Serial.begin(115200);
-    
+	
     InitializeTouch();
     InitializeScreen();
-    InitializeFileSystem();
-	
+    fileHelper.InitializeFileSystem();
+
     btnPower.setPressedHandler(buttonPressed);
 
-    drawStartImage();
-	
+    drawStartImage();	
+
     menu.Show();
 }
 
 void loop()
-{
+{	
     btnPower.loop();
 	
     if (digitalRead(TOUCH_INT) && touch.scanPoint())
@@ -46,6 +46,7 @@ void buttonPressed(Button2& button)
 
     if (button.getAttachPin() == BUTTON_POWER)
     {
+        //fileHelper.TryChangeFileSystem();
         drawSleepImage();
         BookSleep();
     }

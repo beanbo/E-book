@@ -14,6 +14,7 @@ void Menu::Show()
 
 void Menu::FindBooks()
 {
+    //fileHelper.TryChangeFileSystem();
     m_nBooksCount = 0;
     m_nSelected = 1;
 	
@@ -29,7 +30,7 @@ void Menu::FindBooks()
     const char* dirname = "/";
     Serial.printf("Listing directory: %s\r\n", dirname);
 
-    File root = SPIFFS.open(dirname);
+    File root = fileHelper.GetCurrentFileSystem()->open(dirname);
     if (!root)
     {
         Serial.println("- failed to open directory");
@@ -99,7 +100,7 @@ void Menu::DrawBooks()
         Serial.println("m_pBookNames[" + String(nBookIndex) + "] = " + *m_pBookNames[nBookIndex]);
 
         int nXOffset = nFrameXMargin + nBooksMargin + nBook * (nBookWidth + nBooksMargin);
-        drawRect(nXOffset, nBooksMargin, nBookWidth, nBookHeight);
+        drawRect(nXOffset, nBooksMargin, nBookWidth, nBookHeight, 2);
 
         String strBookName = m_pBookNames[nBookIndex]->c_str();
         strBookName.replace("/", "");

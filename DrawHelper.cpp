@@ -87,9 +87,10 @@ void drawCircle(int x0, int y0, int r, uint8_t color)
     epd_draw_circle(x0, y0, r, color, framebuffer);
 }
 
-void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t width, uint16_t color)
 {
-    epd_draw_rect(x, y, w, h, color, framebuffer);
+	for (int16_t i = 0; i < width; i++)
+        epd_draw_rect(x + i, y + i, w - i * 2, h - i * 2, color, framebuffer);
 }
 
 void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)

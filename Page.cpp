@@ -13,7 +13,7 @@ void PageManager::OpenBook(const String& sFileName)
         m_nNumberOfPages = 0;
     }
 
-    readFile(sFileName.c_str(), m_sBookText);
+    fileHelper.ReadFile(sFileName.c_str(), m_sBookText);
     m_nCurrentPage = 1;
 
     CalculateAllPositions();
