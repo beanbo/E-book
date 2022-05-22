@@ -1,11 +1,15 @@
 #include "Page.h"
 #include "DrawHelper.h"
-#include "firasans.h"
+#include "FiraSans16.h"
 #include "FileHelper.h"
 
 
-void PageManager::OpenBook(const String& sFileName)
+void PageView::OpenBook(const String& sFileName)
 {
+    drawStartImage(false);
+	
+    Serial.println("Open book " + sFileName);
+	
     if (m_Pages != nullptr)
     {
 		delete m_Pages;
@@ -17,16 +21,17 @@ void PageManager::OpenBook(const String& sFileName)
     m_nCurrentPage = 1;
 
     CalculateAllPositions();
-    DrawCurrentPage();
+    Draw();
 }
 
-void PageManager::CalculateAllPositions()
+void PageView::CalculateAllPositions()
 {
-    setFont(FiraSans);
+    setFont(GetFont());
 	
     int yOffset = 0;
     String CurrStr;
-    constexpr int SymbolsInRow = EPD_WIDTH / 16;
+    const int SymbolsInRow = EPD_WIDTH / (GetFont().advance_y / 5);
+    const int MaxRows = (EPD_HEIGHT - m_nYOffset - GetFont().advance_y) / GetFont().advance_y;
     int StartPosition = 0;
 
     char* data;
@@ -98,15 +103,15 @@ void PageManager::CalculateAllPositions()
 
         m_Pages[CurrentReadingPage].endRowPositions[CurrentRow - 1] = StartPosition - 1;
 
-        if (++CurrentRow > ROWS_ON_SCREEN)
+        if (++CurrentRow > MaxRows)
         {
             CurrentRow = 1;
-            m_Pages[CurrentReadingPage].rows = ROWS_ON_SCREEN;
+            m_Pages[CurrentReadingPage].rows = MaxRows;
         }
     }
 }
 
-void PageManager::AddPage()
+void PageView::AddPage()
 {
     m_nNumberOfPages++;
 
@@ -118,26 +123,28 @@ void PageManager::AddPage()
     }
 }
 
-void PageManager::DrawCurrentPage()
+void PageView::Draw()
 {
-    Serial.println("PageManager::DrawCurrentPage()");
-	
-    setFont(FiraSans);
+    Serial.println("PageManager::Draw()");
 	
     epd_poweron();
     ClearFrameBuffer();
 
+    setFont(FiraSans16);
+	
     drawString(EPD_WIDTH / 2, 40, String(m_nCurrentPage) + " / " + String(m_nNumberOfPages), CENTER);
 
+    setFont(GetFont());
+	
     drawLine(0, 47, EPD_WIDTH, 47, Black);
     drawLine(0, 48, EPD_WIDTH, 48, Black);
 
-    int nYOfsset = m_nYOffset;
+    int nYOfsset = m_nYOffset + GetFont().advance_y;
 
     for (int currentRow = 0; currentRow < m_Pages[m_nCurrentPage - 1].rows; currentRow++)
     {
         drawString(m_nXOffset, nYOfsset, m_sBookText.substring(m_Pages[m_nCurrentPage - 1].startRowPositions[currentRow], m_Pages[m_nCurrentPage - 1].endRowPositions[currentRow]), LEFT);
-        nYOfsset += 45;
+        nYOfsset += GetFont().advance_y + 1;
         Serial.println(m_sBookText.substring(m_Pages[m_nCurrentPage - 1].startRowPositions[currentRow], m_Pages[m_nCurrentPage - 1].endRowPositions[currentRow]));
     }
 
@@ -146,20 +153,20 @@ void PageManager::DrawCurrentPage()
     epd_poweroff();
 }
 
-void PageManager::GoToNextPage()
+void PageView::GoToNextPage()
 {
     if (m_nCurrentPage < m_nNumberOfPages)
     {
         m_nCurrentPage++;
-        DrawCurrentPage();
+        Draw();
     }
 }
 
-void PageManager::GoToPreviousPage()
+void PageView::GoToPreviousPage()
 {
     if (m_nCurrentPage > 1)
     {
         m_nCurrentPage--;
-        DrawCurrentPage();
+        Draw();
     }
 }

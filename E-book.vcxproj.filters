@@ -21,9 +21,6 @@
     <ClInclude Include="__vm\.E-book.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="firasans.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="lilygo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,7 +39,34 @@
     <ClInclude Include="Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Menu.h">
+    <ClInclude Include="MainView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FiraSans16.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FiraSans26.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FiraSans12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bookimg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="setting_img.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="books_img.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sleep_img.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="load_img.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,7 +80,10 @@
     <ClCompile Include="FileHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Menu.cpp">
+    <ClCompile Include="MainView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

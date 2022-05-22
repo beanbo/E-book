@@ -105,27 +105,34 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bookimg.h" />
+    <ClInclude Include="books_img.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="DrawHelper.h" />
     <ClInclude Include="FileHelper.h" />
-    <ClInclude Include="firasans.h">
-      <FileType>CppCode</FileType>
-    </ClInclude>
+    <ClInclude Include="FiraSans12.h" />
+    <ClInclude Include="FiraSans16.h" />
+    <ClInclude Include="FiraSans26.h" />
     <ClInclude Include="lilygo.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="load_img.h" />
     <ClInclude Include="logo.h">
       <FileType>CppCode</FileType>
     </ClInclude>
-    <ClInclude Include="Menu.h" />
+    <ClInclude Include="MainView.h" />
     <ClInclude Include="Page.h" />
+    <ClInclude Include="setting_img.h" />
+    <ClInclude Include="sleep_img.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="__vm\.E-book.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DrawHelper.cpp" />
     <ClCompile Include="FileHelper.cpp" />
-    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="MainView.cpp" />
     <ClCompile Include="Page.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

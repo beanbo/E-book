@@ -1,5 +1,5 @@
 #pragma once
-#include "Menu.h"
+#include "MainView.h"
 #include "FileHelper.h"
 #include <Arduino.h>
 #include <touch.h>
@@ -10,7 +10,7 @@
 
 Button2 btnPower(BUTTON_POWER);
 TouchClass touch;
-Menu menu;
+MainView mainView;
 
 void setup()
 {
@@ -24,7 +24,7 @@ void setup()
 
     drawStartImage();	
 
-    menu.Show();
+    mainView.Show();
 }
 
 void loop()
@@ -35,8 +35,9 @@ void loop()
     {
         uint16_t x, y;
         touch.getPoint(x, y, 0);
+        y = EPD_HEIGHT - y;
 
-        menu.HitTest(x, y);
+        mainView.HitTest(x, y);
     }
 }
 
@@ -47,6 +48,8 @@ void buttonPressed(Button2& button)
     if (button.getAttachPin() == BUTTON_POWER)
     {
         //fileHelper.TryChangeFileSystem();
+		touch.wakeup();
+
         drawSleepImage();
         BookSleep();
     }
@@ -77,7 +80,8 @@ void BookSleep()
     epd_poweroff_all();
 
     // Set to wake up by GPIO39
-    esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
-
-    esp_deep_sleep_start();
+    //esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
+    esp_sleep_enable_gpio_wakeup();
+	
+    esp_light_sleep_start();
 }
